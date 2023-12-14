@@ -24,7 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class FirstJob {
     public static class DataCleaningMapper
-            extends Mapper<Object, Text, GameKey, Game> {
+            extends Mapper<Object, Text, Game, NullWritable> {
 
         private final ObjectMapper mapper = new ObjectMapper();
 
@@ -80,8 +80,7 @@ public class FirstJob {
                     Game game = new Game(date, round, win, player, deck, clan, cardsList, player2, deck2, clan2,
                             cardsList2);
 
-                    GameKey gameKey = new GameKey(date, round, player, player2);
-                    context.write(gameKey, game);
+                    context.write(game, NullWritable.get());
                 }
 
             } catch (Exception e) {
@@ -90,59 +89,25 @@ public class FirstJob {
         }
     }
 
-    // public static class TP3Reducer extends Reducer<CitiesKey, Cities, CitiesKey,
-    // Cities> {
-    // @Override
-    // public void reduce(CitiesKey key, Iterable<Cities> values, Context context)
-    // throws IOException, InterruptedException {
-    // Cities treatedCity = null;
-    // int maxPopulation = Integer.MIN_VALUE;
-    // double totalLatitude = 0.0;
-    // double totalLongitude = 0.0;
-    // int count = 0;
-
-    // for (Cities city : values) {
-    // int population = city.getPopulation();
-    // double latitude = city.getLatitude();
-    // double longitude = city.getLongitude();
-
-    // if (treatedCity == null) {
-    // treatedCity = city.clone();
-    // }
-
-    // if (population > maxPopulation) {
-    // maxPopulation = population;
-    // treatedCity.setPopulation(population);
-    // }
-
-    // totalLatitude += latitude;
-    // totalLongitude += longitude;
-    // count++;
-    // }
-
-    // if (treatedCity != null) {
-    // double avgLatitude = totalLatitude / count;
-    // double avgLongitude = totalLongitude / count;
-
-    // treatedCity.setLatitude(avgLatitude);
-    // treatedCity.setLongitude(avgLongitude);
-
-    // context.write(key, treatedCity);
-    // }
-    // }
-    // }
+    public static class DataCleaningReducer extends Reducer<Game, NullWritable, Game, NullWritable> {
+        @Override
+        public void reduce(Game key, Iterable<NullWritable> values, Context context)
+                throws IOException, InterruptedException {
+            context.write(key, NullWritable.get());
+        }
+    }
 
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
         Job job = Job.getInstance(conf, "FirstJob");
-        job.setNumReduceTasks(0);
+        job.setNumReduceTasks(1);
         job.setJarByClass(FirstJob.class);
         job.setMapperClass(DataCleaningMapper.class);
-        job.setMapOutputKeyClass(Text.class);
-        job.setMapOutputValueClass(IntWritable.class);
-        // job.setReducerClass(TP3Reducer.class);
-        job.setOutputKeyClass(GameKey.class);
-        job.setOutputValueClass(Game.class);
+        job.setMapOutputKeyClass(Game.class);
+        job.setMapOutputValueClass(NullWritable.class);
+        job.setReducerClass(DataCleaningReducer.class);
+        job.setOutputKeyClass(Game.class);
+        job.setOutputValueClass(NullWritable.class);
         job.setOutputFormatClass(TextOutputFormat.class);
         job.setInputFormatClass(TextInputFormat.class);
         FileInputFormat.addInputPath(job, new Path(args[0]));
