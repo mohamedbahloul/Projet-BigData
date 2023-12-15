@@ -1,6 +1,4 @@
 import java.io.IOException;
-import java.util.List;
-import java.util.ArrayList;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -13,35 +11,30 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
-import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
 public class SecondJob {
     public static class StatsMapper
-            extends Mapper<Game, NullWritable, Text, IntWritable> {
-
-        private final IntWritable one = new IntWritable(1);
+            extends Mapper<Game, NullWritable, Text, GameSummary> {
 
         @Override
         public void map(Game key, NullWritable value, Context context) throws IOException, InterruptedException {
-
-            if (key.getWin() == 1) {
-                context.write(new Text(key.getCards().toString()), one);
-            } else {
-                context.write(new Text(key.getCards2().toString()), one);
-            }
+            context.write(new Text(key.getCards().toString()), new GameSummary(key.getWin(), 1));
+            context.write(new Text(key.getCards2().toString()), new GameSummary(key.getWin() == 1 ? 0 : 1, 1));
         }
     }
 
-    public static class StatsReducer extends Reducer<Text, IntWritable, Text, NullWritable> {
+    public static class StatsReducer extends Reducer<Text, GameSummary, Text, NullWritable> {
         @Override
-        public void reduce(Text key, Iterable<IntWritable> values, Context context)
+        public void reduce(Text key, Iterable<GameSummary> values, Context context)
                 throws IOException, InterruptedException {
-            int sum = 0;
-            for (IntWritable val : values) {
-                sum += val.get();
+            int wins = 0;
+            int uses = 0;
+            for (GameSummary val : values) {
+                wins += val.getWins();
+                uses += val.getUses();
             }
-            context.write(new Text(key + " " + sum), NullWritable.get());
+            context.write(new Text(key.toString() + " " + wins + " " + uses), NullWritable.get());
         }
     }
 
