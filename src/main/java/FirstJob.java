@@ -65,8 +65,13 @@ public class FirstJob {
 
                 if (date != null && round != null && win != null && player != null && deck != null && clan != null
                         && cards != null && player2 != null && deck2 != null && clan2 != null && cards2 != null
-                        && cards.length() == 16 && cards2.length() == 16) {
-
+                        && cards.length() >= 16 && cards2.length() >= 16) {
+                    if (cards.length() > 16) {
+                        cards = cards.substring(0, 16);
+                    }
+                    if (cards2.length() > 16) {
+                        cards2 = cards2.substring(0, 16);
+                    }
                     List<Integer> cardsList = hexStringToList(cards);
                     List<Integer> cardsList2 = hexStringToList(cards2);
 
