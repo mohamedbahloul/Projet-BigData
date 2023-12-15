@@ -19,8 +19,8 @@ public class SecondJob {
 
         @Override
         public void map(Game key, NullWritable value, Context context) throws IOException, InterruptedException {
-            context.write(new Text(key.getCards().toString()), new GameSummary(key.getWin(), 1, key.getClanTr()));
-            context.write(new Text(key.getCards2().toString()), new GameSummary(!key.getWin(), 1, key.getClanTr2()));
+            context.write(new Text(key.getCards().toString()), new GameSummary(key.getWin(), 1, key.getClanTr(), key.getDeck() - key.getDeck2()));
+            context.write(new Text(key.getCards2().toString()), new GameSummary(!key.getWin(), 1, key.getClanTr2(), key.getDeck2() - key.getDeck()));
         }
     }
 
@@ -33,13 +33,16 @@ public class SecondJob {
             int wins = 0;
             int uses = 0;
             int maxClanTr = 0;
+            double totalDeckDiff = 0;
             for (GameSummary val : values) {
-                if (val.getWins())
+                if (val.getWins()) {
                     wins += 1;
+                    totalDeckDiff += val.getAvgDeckDiff();
+                }
                 uses += val.getUses();
                 maxClanTr = Math.max(maxClanTr, val.getMaxClanTr());
             }
-            context.write(key, new GameSummary(wins, uses, maxClanTr));
+            context.write(key, new GameSummary(wins, uses, maxClanTr, totalDeckDiff));
         }
     }
 
@@ -50,12 +53,16 @@ public class SecondJob {
             int wins = 0;
             int uses = 0;
             int maxClanTr = 0;
+            double totalDeckDiff = 0;
             for (GameSummary val : values) {
                 wins += val.getWinsPartialCount();
                 uses += val.getUses();
                 maxClanTr = Math.max(maxClanTr, val.getMaxClanTr());
+                totalDeckDiff += val.getTotalDeckDiff();
             }
-            context.write(new Text(key.toString() + " " + wins + " " + uses + " " + maxClanTr), NullWritable.get());
+
+            double avgDeckDiff = uses > 0 ? totalDeckDiff / uses : 0;
+            context.write(new Text(key.toString() + " " + wins + " " + uses + " " + maxClanTr + " " + avgDeckDiff), NullWritable.get());
         }
     }
 
