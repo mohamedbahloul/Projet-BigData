@@ -14,6 +14,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,14 +25,14 @@ public class FirstJob {
 
         private final ObjectMapper mapper = new ObjectMapper();
 
-        public static List<Integer> hexStringToList(String hexString) {
-            List<Integer> resultList = new ArrayList<>();
+        public static List<Byte> hexStringToList(String hexString) {
+            List<Byte> resultList = new ArrayList<>();
 
             // Parcours la chaîne par paires de caractères
             for (int i = 0; i < hexString.length(); i += 2) {
                 String hexPair = hexString.substring(i, i + 2);
                 // Convertit la paire hexadécimale en entier et l'ajoute à la liste
-                int decimalValue = Integer.parseInt(hexPair, 16);
+                Byte decimalValue = Byte.parseByte(hexPair, 16);
                 resultList.add(decimalValue);
             }
             Collections.sort(resultList);
@@ -48,7 +49,7 @@ public class FirstJob {
 
                 Instant date = Instant.parse(jsonNode.get("date").asText());
                 Integer round = jsonNode.get("round").asInt();
-                Integer win = jsonNode.get("win").asInt();
+                Boolean win = jsonNode.get("win").asBoolean();
 
                 String player = jsonNode.get("player").asText();
                 Double deck = jsonNode.get("deck").asDouble();
@@ -71,8 +72,8 @@ public class FirstJob {
                     if (cards2.length() > 16) {
                         cards2 = cards2.substring(0, 16);
                     }
-                    List<Integer> cardsList = hexStringToList(cards);
-                    List<Integer> cardsList2 = hexStringToList(cards2);
+                    List<Byte> cardsList = hexStringToList(cards);
+                    List<Byte> cardsList2 = hexStringToList(cards2);
 
                     Game game = new Game(date, round, win, player, deck, clan, cardsList, player2, deck2, clan2,
                             cardsList2);

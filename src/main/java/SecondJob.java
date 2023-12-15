@@ -20,7 +20,7 @@ public class SecondJob {
         @Override
         public void map(Game key, NullWritable value, Context context) throws IOException, InterruptedException {
             context.write(new Text(key.getCards().toString()), new GameSummary(key.getWin(), 1));
-            context.write(new Text(key.getCards2().toString()), new GameSummary(key.getWin() == 1 ? 0 : 1, 1));
+            context.write(new Text(key.getCards2().toString()), new GameSummary(!key.getWin(), 1));
         }
     }
 
@@ -31,7 +31,8 @@ public class SecondJob {
             int wins = 0;
             int uses = 0;
             for (GameSummary val : values) {
-                wins += val.getWins();
+                if (val.getWins())
+                    wins += 1;
                 uses += val.getUses();
             }
             context.write(new Text(key.toString() + " " + wins + " " + uses), NullWritable.get());
@@ -45,7 +46,7 @@ public class SecondJob {
         job2.setJarByClass(SecondJob.class);
         job2.setMapperClass(StatsMapper.class);
         job2.setMapOutputKeyClass(Text.class);
-        job2.setMapOutputValueClass(IntWritable.class);
+        job2.setMapOutputValueClass(GameSummary.class);
         job2.setReducerClass(StatsReducer.class);
         job2.setOutputKeyClass(Text.class);
         job2.setOutputValueClass(NullWritable.class);

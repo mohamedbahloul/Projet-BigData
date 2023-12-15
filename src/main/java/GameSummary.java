@@ -4,23 +4,23 @@ import java.io.IOException;
 
 import org.apache.hadoop.io.Writable;
 
-public class GameSummary implements Writable{
-    private int wins;
+public class GameSummary implements Writable {
+    private Boolean wins;
     private int uses;
 
     public GameSummary() {
     }
 
-    public GameSummary(int wins, int uses) {
+    public GameSummary(Boolean wins, int uses) {
         this.wins = wins;
         this.uses = uses;
     }
 
-    public int getWins() {
+    public Boolean getWins() {
         return wins;
     }
 
-    public void setWins(int wins) {
+    public void setWins(Boolean wins) {
         this.wins = wins;
     }
 
@@ -31,17 +31,17 @@ public class GameSummary implements Writable{
     public void setUses(int uses) {
         this.uses = uses;
     }
-    
+
     @Override
     public void write(DataOutput dataOutput) throws IOException {
-        dataOutput.writeInt(wins);
+        dataOutput.writeBoolean(wins);
         dataOutput.writeInt(uses);
     }
 
     @Override
     public void readFields(DataInput dataInput) throws IOException {
-        wins = dataInput.readInt();
+        wins = dataInput.readBoolean();
         uses = dataInput.readInt();
     }
-    
+
 }

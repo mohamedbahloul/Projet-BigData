@@ -10,20 +10,20 @@ public class Game implements WritableComparable<Game> {
 
     private Instant date;
     private Integer round;
-    private Integer win;
+    private Boolean win;
 
     private String player;
     private Double deck;
     private String clan;
-    private List<Integer> cards;
+    private List<Byte> cards;
 
     private String player2;
     private Double deck2;
     private String clan2;
-    private List<Integer> cards2;
+    private List<Byte> cards2;
 
-    public Game(Instant date, Integer round, Integer win, String player, Double deck, String clan, List<Integer> cards,
-            String player2, Double deck2, String clan2, List<Integer> cards2) {
+    public Game(Instant date, Integer round, Boolean win, String player, Double deck, String clan, List<Byte> cards,
+            String player2, Double deck2, String clan2, List<Byte> cards2) {
         this.date = date;
         this.round = round;
 
@@ -46,7 +46,7 @@ public class Game implements WritableComparable<Game> {
             this.clan2 = clan;
             this.cards = cards2;
             this.cards2 = cards;
-            this.win = win == 1 ? 0 : 1;
+            this.win = !win;
         }
     }
 
@@ -58,7 +58,7 @@ public class Game implements WritableComparable<Game> {
         dataOutput.writeUTF(date.toString());
         dataOutput.writeUTF(player);
         dataOutput.writeUTF(player2);
-        dataOutput.writeInt(win);
+        dataOutput.writeBoolean(win);
         dataOutput.writeInt(round);
         dataOutput.writeDouble(deck);
         dataOutput.writeDouble(deck2);
@@ -73,7 +73,7 @@ public class Game implements WritableComparable<Game> {
         date = Instant.parse(dataInput.readUTF());
         player = dataInput.readUTF();
         player2 = dataInput.readUTF();
-        win = dataInput.readInt();
+        win = dataInput.readBoolean();
         round = dataInput.readInt();
         deck = dataInput.readDouble();
         deck2 = dataInput.readDouble();
@@ -83,8 +83,8 @@ public class Game implements WritableComparable<Game> {
         cards2 = stringToList(dataInput.readUTF());
     }
 
-    public static List<Integer> stringToList(String input) {
-        List<Integer> result = new ArrayList<>();
+    public static List<Byte> stringToList(String input) {
+        List<Byte> result = new ArrayList<>();
 
         // Supprimez les crochets de début et de fin
         input = input.replaceAll("\\[|\\]", "");
@@ -94,7 +94,7 @@ public class Game implements WritableComparable<Game> {
 
         // Convertissez chaque sous-chaîne en entier et ajoutez-le à la liste
         for (String element : elements) {
-            result.add(Integer.parseInt(element.trim()));
+            result.add(Byte.parseByte(element.trim()));
         }
 
         return result;
@@ -123,11 +123,11 @@ public class Game implements WritableComparable<Game> {
         this.round = round;
     }
 
-    public Integer getWin() {
+    public Boolean getWin() {
         return win;
     }
 
-    public void setWin(Integer win) {
+    public void setWin(Boolean win) {
         this.win = win;
     }
 
@@ -155,11 +155,11 @@ public class Game implements WritableComparable<Game> {
         this.clan = clan;
     }
 
-    public List<Integer> getCards() {
+    public List<Byte> getCards() {
         return cards;
     }
 
-    public void setCards(List<Integer> cards) {
+    public void setCards(List<Byte> cards) {
         this.cards = cards;
     }
 
@@ -187,11 +187,11 @@ public class Game implements WritableComparable<Game> {
         this.clan2 = clan2;
     }
 
-    public List<Integer> getCards2() {
+    public List<Byte> getCards2() {
         return cards2;
     }
 
-    public void setCards2(List<Integer> cards2) {
+    public void setCards2(List<Byte> cards2) {
         this.cards2 = cards2;
     }
 
