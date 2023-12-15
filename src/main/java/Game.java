@@ -8,19 +8,19 @@ import java.time.Instant;
 
 public class Game implements WritableComparable<Game> {
 
-    public Instant date;
-    public Integer round;
-    public Integer win;
+    private Instant date;
+    private Integer round;
+    private Integer win;
 
-    public String player;
-    public Double deck;
-    public String clan;
-    public List<Integer> cards;
+    private String player;
+    private Double deck;
+    private String clan;
+    private List<Integer> cards;
 
-    public String player2;
-    public Double deck2;
-    public String clan2;
-    public List<Integer> cards2;
+    private String player2;
+    private Double deck2;
+    private String clan2;
+    private List<Integer> cards2;
 
     public Game(Instant date, Integer round, Integer win, String player, Double deck, String clan, List<Integer> cards,
             String player2, Double deck2, String clan2, List<Integer> cards2) {
