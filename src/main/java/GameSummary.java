@@ -7,24 +7,28 @@ import org.apache.hadoop.io.Writable;
 public class GameSummary implements Writable {
     private Boolean wins;
     private int uses;
-    private byte winsPartialCount;
+    private int winsPartialCount;
+    private int maxClanTr;
 
     public GameSummary() {
         this.wins = false;
         this.uses = 0;
         this.winsPartialCount = 0;
+        this.maxClanTr = 0;
     }
 
-    public GameSummary(Boolean wins, int uses) {
+    public GameSummary(Boolean wins, int uses, int maxClanTr) {
         this.wins = wins;
         this.uses = uses;
         this.winsPartialCount = 0;
+        this.maxClanTr = maxClanTr;
     }
 
-    public GameSummary(byte winsPartialCount, int uses) {
+    public GameSummary(int winsPartialCount, int uses, int maxClanTr) {
         this.winsPartialCount = winsPartialCount;
         this.uses = uses;
         this.wins = false;
+        this.maxClanTr = maxClanTr;
     }
 
     public Boolean getWins() {
@@ -43,11 +47,28 @@ public class GameSummary implements Writable {
         this.uses = uses;
     }
 
+    public int getWinsPartialCount() {
+        return winsPartialCount;
+    }
+
+    public void setWinsPartialCount(int winsPartialCount) {
+        this.winsPartialCount = winsPartialCount;
+    }
+
+    public int getMaxClanTr() {
+        return maxClanTr;
+    }
+
+    public void setMaxClanTr(int maxClanTr) {
+        this.maxClanTr = maxClanTr;
+    }
+
     @Override
     public void write(DataOutput dataOutput) throws IOException {
         dataOutput.writeBoolean(wins);
         dataOutput.writeInt(uses);
         dataOutput.writeByte(winsPartialCount);
+        dataOutput.writeInt(maxClanTr);
     }
 
     @Override
@@ -55,14 +76,6 @@ public class GameSummary implements Writable {
         wins = dataInput.readBoolean();
         uses = dataInput.readInt();
         winsPartialCount = dataInput.readByte();
+        maxClanTr = dataInput.readInt();
     }
-
-    public byte getWinsPartialCount() {
-        return winsPartialCount;
-    }
-
-    public void setWinsPartialCount(byte winsPartialCount) {
-        this.winsPartialCount = winsPartialCount;
-    }
-
 }

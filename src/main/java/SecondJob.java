@@ -19,24 +19,27 @@ public class SecondJob {
 
         @Override
         public void map(Game key, NullWritable value, Context context) throws IOException, InterruptedException {
-            context.write(new Text(key.getCards().toString()), new GameSummary(key.getWin(), 1));
-            context.write(new Text(key.getCards2().toString()), new GameSummary(!key.getWin(), 1));
+            context.write(new Text(key.getCards().toString()), new GameSummary(key.getWin(), 1, key.getClanTr()));
+            context.write(new Text(key.getCards2().toString()), new GameSummary(!key.getWin(), 1, key.getClanTr2()));
         }
     }
 
     public static class StatsCombiner
             extends Reducer<Text, GameSummary, Text, GameSummary> {
+        @Override
         public void reduce(Text key, Iterable<GameSummary> values, Context context)
                 throws IOException, InterruptedException {
 
-            byte wins = 0;
+            int wins = 0;
             int uses = 0;
+            int maxClanTr = 0;
             for (GameSummary val : values) {
                 if (val.getWins())
                     wins += 1;
                 uses += val.getUses();
+                maxClanTr = Math.max(maxClanTr, val.getMaxClanTr());
             }
-            context.write(key, new GameSummary(wins, uses));
+            context.write(key, new GameSummary(wins, uses, maxClanTr));
         }
     }
 
@@ -46,11 +49,13 @@ public class SecondJob {
                 throws IOException, InterruptedException {
             int wins = 0;
             int uses = 0;
+            int maxClanTr = 0;
             for (GameSummary val : values) {
                 wins += val.getWinsPartialCount();
                 uses += val.getUses();
+                maxClanTr = Math.max(maxClanTr, val.getMaxClanTr());
             }
-            context.write(new Text(key.toString() + " " + wins + " " + uses), NullWritable.get());
+            context.write(new Text(key.toString() + " " + wins + " " + uses + " " + maxClanTr), NullWritable.get());
         }
     }
 

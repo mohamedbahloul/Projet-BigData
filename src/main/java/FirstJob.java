@@ -53,18 +53,18 @@ public class FirstJob {
 
                 String player = jsonNode.get("player").asText();
                 Double deck = jsonNode.get("deck").asDouble();
-                String clan = jsonNode.get("clan").asText();
+                Integer clanTr = jsonNode.get("clanTr").asInt();
                 String cards = jsonNode.get("cards").asText();
 
                 String player2 = jsonNode.get("player2").asText();
                 Double deck2 = jsonNode.get("deck2").asDouble();
-                String clan2 = jsonNode.get("clan2").asText();
+                Integer clanTr2 = jsonNode.get("clanTr2").asInt();
                 String cards2 = jsonNode.get("cards2").asText();
 
                 // data cleaning
 
-                if (date != null && round != null && win != null && player != null && deck != null && clan != null
-                        && cards != null && player2 != null && deck2 != null && clan2 != null && cards2 != null
+                if (date != null && round != null && win != null && player != null && deck != null && clanTr != null
+                        && cards != null && player2 != null && deck2 != null && clanTr2 != null && cards2 != null
                         && cards.length() >= 16 && cards2.length() >= 16) {
                     if (cards.length() > 16) {
                         cards = cards.substring(0, 16);
@@ -75,7 +75,7 @@ public class FirstJob {
                     List<Byte> cardsList = hexStringToList(cards);
                     List<Byte> cardsList2 = hexStringToList(cards2);
 
-                    Game game = new Game(date, round, win, player, deck, clan, cardsList, player2, deck2, clan2,
+                    Game game = new Game(date, round, win, player, deck, clanTr, cardsList, player2, deck2, clanTr2,
                             cardsList2);
 
                     context.write(game, NullWritable.get());
