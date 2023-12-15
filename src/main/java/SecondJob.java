@@ -24,6 +24,22 @@ public class SecondJob {
         }
     }
 
+    public static class StatsCombiner
+            extends Reducer<Text, GameSummary, Text, GameSummary> {
+        public void reduce(Text key, Iterable<GameSummary> values, Context context)
+                throws IOException, InterruptedException {
+
+            byte wins = 0;
+            int uses = 0;
+            for (GameSummary val : values) {
+                if (val.getWins())
+                    wins += 1;
+                uses += val.getUses();
+            }
+            context.write(key, new GameSummary(wins, uses));
+        }
+    }
+
     public static class StatsReducer extends Reducer<Text, GameSummary, Text, NullWritable> {
         @Override
         public void reduce(Text key, Iterable<GameSummary> values, Context context)
@@ -31,8 +47,7 @@ public class SecondJob {
             int wins = 0;
             int uses = 0;
             for (GameSummary val : values) {
-                if (val.getWins())
-                    wins += 1;
+                wins += val.getWinsPartialCount();
                 uses += val.getUses();
             }
             context.write(new Text(key.toString() + " " + wins + " " + uses), NullWritable.get());
@@ -45,6 +60,7 @@ public class SecondJob {
         job2.setNumReduceTasks(1);
         job2.setJarByClass(SecondJob.class);
         job2.setMapperClass(StatsMapper.class);
+        job2.setCombinerClass(StatsCombiner.class);
         job2.setMapOutputKeyClass(Text.class);
         job2.setMapOutputValueClass(GameSummary.class);
         job2.setReducerClass(StatsReducer.class);
