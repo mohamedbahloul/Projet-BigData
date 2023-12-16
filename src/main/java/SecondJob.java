@@ -1,4 +1,7 @@
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -19,8 +22,8 @@ public class SecondJob {
 
         @Override
         public void map(Game key, NullWritable value, Context context) throws IOException, InterruptedException {
-            context.write(new Text(key.getCards().toString()), new GameSummary(key.getWin(), 1, key.getClanTr(), key.getDeck() - key.getDeck2()));
-            context.write(new Text(key.getCards2().toString()), new GameSummary(!key.getWin(), 1, key.getClanTr2(), key.getDeck2() - key.getDeck()));
+            context.write(new Text(key.getCards().toString()), new GameSummary(key.getWin(), 1, key.getClanTr(), key.getDeck() - key.getDeck2(), new HashSet<>(Arrays.asList(key.getPlayer()))));
+            context.write(new Text(key.getCards2().toString()), new GameSummary(!key.getWin(), 1, key.getClanTr2(), key.getDeck2() - key.getDeck(), new HashSet<>(Arrays.asList(key.getPlayer2()))));
         }
     }
 
@@ -34,15 +37,17 @@ public class SecondJob {
             int uses = 0;
             int maxClanTr = 0;
             double totalDeckDiff = 0;
+            Set<String> players = new HashSet<>();
             for (GameSummary val : values) {
                 if (val.getWins()) {
                     wins += 1;
-                    totalDeckDiff += val.getAvgDeckDiff();
+                    totalDeckDiff += val.getTotalDeckDiff();
                 }
                 uses += val.getUses();
                 maxClanTr = Math.max(maxClanTr, val.getMaxClanTr());
+                players.addAll(val.getPlayers());
             }
-            context.write(key, new GameSummary(wins, uses, maxClanTr, totalDeckDiff));
+            context.write(key, new GameSummary(wins, uses, maxClanTr, totalDeckDiff, players));
         }
     }
 
@@ -54,15 +59,17 @@ public class SecondJob {
             int uses = 0;
             int maxClanTr = 0;
             double totalDeckDiff = 0;
+            Set<String> players = new HashSet<>();
             for (GameSummary val : values) {
                 wins += val.getWinsPartialCount();
                 uses += val.getUses();
                 maxClanTr = Math.max(maxClanTr, val.getMaxClanTr());
                 totalDeckDiff += val.getTotalDeckDiff();
+                players.addAll(val.getPlayers());
             }
 
-            double avgDeckDiff = uses > 0 ? totalDeckDiff / uses : 0;
-            context.write(new Text(key.toString() + " " + wins + " " + uses + " " + maxClanTr + " " + avgDeckDiff), NullWritable.get());
+            double avgDeckDiff = wins > 0 ? totalDeckDiff / wins : 0;
+            context.write(new Text(key.toString() + " " + wins + " " + uses + " " + maxClanTr + " " + avgDeckDiff + " " + players.size()), NullWritable.get());
         }
     }
 
