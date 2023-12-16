@@ -5,47 +5,35 @@ import java.io.IOException;
 import org.apache.hadoop.io.Writable;
 
 public class GameSummary implements Writable {
-    private Boolean wins;
+    private int wins;
     private int uses;
-    private int winsPartialCount;
     private int maxClanTr;
     private double totalDeckDiff;
     private double avgDeckDiff;
     private String players;
 
     public GameSummary() {
-        this.wins = false;
+        this.wins = 0;
         this.uses = 0;
-        this.winsPartialCount = 0;
         this.maxClanTr = 0;
         this.totalDeckDiff = 0;
         this.avgDeckDiff = 0;
         this.players = "";
     }
 
-    public GameSummary(Boolean wins, int uses, int maxClanTr, double totalDeckDiff, String players) {
+    public GameSummary(int wins, int uses, int maxClanTr, double totalDeckDiff, String players) {
         this.wins = wins;
         this.uses = uses;
-        this.winsPartialCount = 0;
         this.maxClanTr = maxClanTr;
         this.totalDeckDiff = totalDeckDiff;
         this.players = players;
     }
 
-    public GameSummary(int winsPartialCount, int uses, int maxClanTr, double totalDeckDiff, String players) {
-        this.winsPartialCount = winsPartialCount;
-        this.uses = uses;
-        this.wins = false;
-        this.maxClanTr = maxClanTr;
-        this.totalDeckDiff = totalDeckDiff;
-        this.players = players;
-    }
-
-    public Boolean getWins() {
+    public int getWins() {
         return wins;
     }
 
-    public void setWins(Boolean wins) {
+    public void setWins(int wins) {
         this.wins = wins;
     }
 
@@ -55,14 +43,6 @@ public class GameSummary implements Writable {
 
     public void setUses(int uses) {
         this.uses = uses;
-    }
-
-    public int getWinsPartialCount() {
-        return winsPartialCount;
-    }
-
-    public void setWinsPartialCount(int winsPartialCount) {
-        this.winsPartialCount = winsPartialCount;
     }
 
     public int getMaxClanTr() {
@@ -99,9 +79,8 @@ public class GameSummary implements Writable {
 
     @Override
     public void write(DataOutput dataOutput) throws IOException {
-        dataOutput.writeBoolean(wins);
+        dataOutput.writeInt(wins);
         dataOutput.writeInt(uses);
-        dataOutput.writeByte(winsPartialCount);
         dataOutput.writeInt(maxClanTr);
         dataOutput.writeDouble(totalDeckDiff);
         dataOutput.writeDouble(avgDeckDiff);
@@ -110,9 +89,8 @@ public class GameSummary implements Writable {
 
     @Override
     public void readFields(DataInput dataInput) throws IOException {
-        wins = dataInput.readBoolean();
+        wins = dataInput.readInt();
         uses = dataInput.readInt();
-        winsPartialCount = dataInput.readByte();
         maxClanTr = dataInput.readInt();
         totalDeckDiff = dataInput.readDouble();
         avgDeckDiff = dataInput.readDouble();

@@ -23,8 +23,8 @@ public class SecondJob {
         @Override
         public void map(Game key, NullWritable value, Context context) throws IOException, InterruptedException {
             context.write(new Text(key.getCards().toString()),
-                    new GameSummary(key.getWin(), 1, key.getClanTr(), key.getDeck() - key.getDeck2(), key.getPlayer()));
-            context.write(new Text(key.getCards2().toString()), new GameSummary(!key.getWin(), 1, key.getClanTr2(),
+                    new GameSummary(key.getWin() ? 1 : 0, 1, key.getClanTr(), key.getDeck() - key.getDeck2(), key.getPlayer()));
+            context.write(new Text(key.getCards2().toString()), new GameSummary(key.getWin() ? 0 : 1, 1, key.getClanTr2(),
                     key.getDeck2() - key.getDeck(), key.getPlayer2()));
         }
     }
@@ -41,7 +41,7 @@ public class SecondJob {
             double totalDeckDiff = 0;
             Set<String> players = new HashSet<>();
             for (GameSummary val : values) {
-                if (val.getWins()) {
+                if (val.getWins() == 1) {
                     wins += 1;
                     totalDeckDiff += val.getTotalDeckDiff();
                 }
@@ -64,7 +64,7 @@ public class SecondJob {
             double totalDeckDiff = 0;
             Set<String> players = new HashSet<>();
             for (GameSummary val : values) {
-                wins += val.getWinsPartialCount();
+                wins += val.getWins();
                 uses += val.getUses();
                 maxClanTr = Math.max(maxClanTr, val.getMaxClanTr());
                 totalDeckDiff += val.getTotalDeckDiff();
