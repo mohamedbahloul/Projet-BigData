@@ -22,8 +22,10 @@ public class SecondJob {
 
         @Override
         public void map(Game key, NullWritable value, Context context) throws IOException, InterruptedException {
-            context.write(new Text(key.getCards().toString()), new GameSummary(key.getWin(), 1, key.getClanTr(), key.getDeck() - key.getDeck2(), new HashSet<>(Arrays.asList(key.getPlayer()))));
-            context.write(new Text(key.getCards2().toString()), new GameSummary(!key.getWin(), 1, key.getClanTr2(), key.getDeck2() - key.getDeck(), new HashSet<>(Arrays.asList(key.getPlayer2()))));
+            context.write(new Text(key.getCards().toString()),
+                    new GameSummary(key.getWin(), 1, key.getClanTr(), key.getDeck() - key.getDeck2(), key.getPlayer()));
+            context.write(new Text(key.getCards2().toString()), new GameSummary(!key.getWin(), 1, key.getClanTr2(),
+                    key.getDeck2() - key.getDeck(), key.getPlayer2()));
         }
     }
 
@@ -45,9 +47,10 @@ public class SecondJob {
                 }
                 uses += val.getUses();
                 maxClanTr = Math.max(maxClanTr, val.getMaxClanTr());
-                players.addAll(val.getPlayers());
+                players.addAll(Arrays.asList(val.getPlayers()));
             }
-            context.write(key, new GameSummary(wins, uses, maxClanTr, totalDeckDiff, players));
+            context.write(key, new GameSummary(wins, uses, maxClanTr, totalDeckDiff,
+                    players.toString().replace("[", "").replace("]", "").replace(" ", "")));
         }
     }
 
@@ -65,11 +68,12 @@ public class SecondJob {
                 uses += val.getUses();
                 maxClanTr = Math.max(maxClanTr, val.getMaxClanTr());
                 totalDeckDiff += val.getTotalDeckDiff();
-                players.addAll(val.getPlayers());
+                players.addAll(Arrays.asList(val.getPlayers().split(",")));
             }
 
             double avgDeckDiff = wins > 0 ? totalDeckDiff / wins : 0;
-            context.write(new Text(key.toString() + " " + wins + " " + uses + " " + maxClanTr + " " + avgDeckDiff + " " + players.size()), NullWritable.get());
+            context.write(new Text(key.toString() + " " + wins + " " + uses + " " + maxClanTr + " " + avgDeckDiff + " "
+                    + players.size()), NullWritable.get());
         }
     }
 
