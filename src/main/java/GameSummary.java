@@ -1,9 +1,6 @@
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.apache.hadoop.io.Writable;
 
@@ -35,12 +32,12 @@ public class GameSummary implements Writable {
         this.players = players;
     }
 
-    public GameSummary(int winsPartialCount, int uses, int maxClanTr, double avgDeckDiff, String players) {
+    public GameSummary(int winsPartialCount, int uses, int maxClanTr, double totalDeckDiff, String players) {
         this.winsPartialCount = winsPartialCount;
         this.uses = uses;
         this.wins = false;
         this.maxClanTr = maxClanTr;
-        this.avgDeckDiff = avgDeckDiff;
+        this.totalDeckDiff = totalDeckDiff;
         this.players = players;
     }
 
