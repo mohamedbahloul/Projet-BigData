@@ -47,7 +47,7 @@ public class FirstJob {
 
                 // Accéder aux champs JSON
 
-                Instant date = Instant.parse(jsonNode.get("date").asText());
+                String date = jsonNode.get("date").asText();
                 Integer round = jsonNode.get("round").asInt();
                 Boolean win = jsonNode.get("win").asBoolean();
 
@@ -63,7 +63,7 @@ public class FirstJob {
 
                 // data cleaning
 
-                if (date != null && round != null && win != null && player != null && deck != null && clanTr != null
+                if (valideDate(date) && round != null && win != null && player != null && deck != null && clanTr != null
                         && cards != null && player2 != null && deck2 != null && clanTr2 != null && cards2 != null
                         && cards.length() >= 16 && cards2.length() >= 16) {
                     if (cards.length() > 16) {
@@ -75,7 +75,7 @@ public class FirstJob {
                     List<Byte> cardsList = hexStringToList(cards);
                     List<Byte> cardsList2 = hexStringToList(cards2);
 
-                    Game game = new Game(date, round, win, player, deck, clanTr, cardsList, player2, deck2, clanTr2,
+                    Game game = new Game(Instant.parse(date), round, win, player, deck, clanTr, cardsList, player2, deck2, clanTr2,
                             cardsList2);
 
                     context.write(game, NullWritable.get());
@@ -83,6 +83,15 @@ public class FirstJob {
 
             } catch (Exception e) {
                 System.out.println("Error parsing JSON: " + e.getMessage());
+            }
+        }
+
+        private boolean valideDate(String date) {
+            try {
+                Instant.parse(date);
+                return true;
+            } catch (Exception e) {
+                return false;
             }
         }
     }
