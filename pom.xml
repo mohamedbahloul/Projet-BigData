@@ -31,38 +31,46 @@
 <build>
     <plugins>
         <!-- Plugin pour générer le JAR du premier job (FirstJob) -->
-        <!-- <plugin>
+        <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-jar-plugin</artifactId>
             <version>3.0.2</version>
             <configuration>
-                <descriptorRefs>
-                    <descriptorRef>first</descriptorRef>
-                </descriptorRefs>
                 <archive>
                     <manifest>
                         <mainClass>FirstJob</mainClass>
                     </manifest>
                 </archive>
             </configuration>
-        </plugin> -->
+        </plugin>
 
         <!-- Plugin pour générer le JAR du deuxième job (SecondJob) -->
-        <plugin>
+        <!-- <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-jar-plugin</artifactId>
             <version>3.0.2</version>
             <configuration>
-                <descriptorRefs>
-                    <descriptorRef>second</descriptorRef>
-                </descriptorRefs>
                 <archive>
                     <manifest>
                         <mainClass>SecondJob</mainClass>
                     </manifest>
                 </archive>
             </configuration>
-        </plugin>
+        </plugin> -->
+
+        <!-- Plugin pour générer le JAR du troisième job (ThirdJob) -->
+        <!-- <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jar-plugin</artifactId>
+            <version>3.0.2</version>
+            <configuration>
+                <archive>
+                    <manifest>
+                        <mainClass>ThirdJob</mainClass>
+                    </manifest>
+                </archive>
+            </configuration>
+        </plugin> -->
     </plugins>
 </build>
 
