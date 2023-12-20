@@ -1,12 +1,9 @@
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.HashMap;
 import java.util.TreeMap;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
@@ -19,64 +16,73 @@ import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
 public class ThirdJob {
     public static class TopKMapper
-            extends Mapper<Text, NullWritable, IntWritable, Text> {
+            extends Mapper<TopK, NullWritable, Text, TopK> {
 
         @Override
-        public void map(Text key, NullWritable value, Context context) throws IOException, InterruptedException {
-            if (key.toString().contains("m_")) {
-                String[] split = key.toString().split("_");
-                String cards = split[0];
-                String month = split[2];
-                String wins = split[5];
-                context.write(new IntWritable(Integer.parseInt(month)), new Text(cards + "_" + wins));
+        public void map(TopK key, NullWritable value, Context context) throws IOException, InterruptedException {
+            if (key.getYear() != -1) {
+                if (key.getMonth() != -1) {
+                    context.write(new Text(key.getYear() + "_m_" + key.getMonth()), key);
+                } else if (key.getWeek() != -1) {
+                    context.write(new Text(key.getYear() + "_w_" + key.getWeek()), key);
+                }
+            } else {
+                context.write(new Text("All"), key);
             }
         }
     }
 
-    public static class TopKReduecr extends Reducer<IntWritable, Text, Text, NullWritable> {
+    public static class TopKReducer extends Reducer<Text, TopK, Text, NullWritable> {
         private static final int K = 5;
-        private static final List<String> months = Arrays.asList("January", "February", "March", "April", "May", "June",
-                "July", "August", "September", "October", "November", "December");
-        private ArrayList<TreeMap<Integer, String>> topKs = new ArrayList<TreeMap<Integer, String>>();
+        private HashMap<String, TreeMap<Integer, String>> topKsWins = new HashMap<String, TreeMap<Integer, String>>();
+        private HashMap<String, TreeMap<Integer, String>> topKsUses = new HashMap<String, TreeMap<Integer, String>>();
 
         @Override
-        protected void setup(Context context) throws IOException, InterruptedException {
-            for (int i = 0; i < 12; i++) {
-                topKs.add(new TreeMap<Integer, String>());
+        public void reduce(Text key, Iterable<TopK> values, Context context)
+                throws IOException, InterruptedException {
+            String date = key.toString();
+            TreeMap<Integer, String> topKWins = topKsWins.get(date);
+            TreeMap<Integer, String> topKUses = topKsUses.get(date);
+            if (topKWins == null) {
+                topKWins = new TreeMap<Integer, String>();
+                topKsWins.put(date, topKWins);
+                topKUses = new TreeMap<Integer, String>();
+                topKsUses.put(date, topKUses);
             }
+
+            for (TopK value : values) {
+                addToTopK(topKWins, value.getCards(), value.getWins());
+                addToTopK(topKUses, value.getCards(), value.getUses());
+            }
+
+            context.write(new Text(date), NullWritable.get());
+            for (Integer wins : topKWins.descendingKeySet()) {
+                context.write(new Text("\tWins: " + wins + " Decks: " + topKWins.get(wins)), NullWritable.get());
+            }
+            context.write(new Text(""), NullWritable.get());
+            for (Integer uses : topKUses.descendingKeySet()) {
+                context.write(new Text("\tUses: " + uses + " Decks: " + topKUses.get(uses)), NullWritable.get());
+            }
+            context.write(new Text(""), NullWritable.get());
+            context.write(new Text(""), NullWritable.get());
+            context.write(new Text(""), NullWritable.get());
         }
 
-        @Override
-        public void reduce(IntWritable key, Iterable<Text> values, Context context)
-                throws IOException, InterruptedException {
-
-            Integer month = Integer.parseInt(key.toString());
-            TreeMap<Integer, String> topK = topKs.get(month);
-
-            for (Text value : values) {
-                String[] split = value.toString().split("_");
-                String deck = split[0];
-                Integer wins = Integer.parseInt(split[1]);
-                if (topK.containsKey(wins)) {
-                    String old_decks = topK.get(wins);
-                    topK.remove(wins);
-                    topK.put(wins, old_decks + " , " + deck);
-                } else {
-                    if (topK.size() < K)
-                        topK.put(wins, deck);
-                    else {
-                        Integer first = topK.firstKey();
-                        if (wins.intValue() > first.intValue()) {
-                            topK.remove(first);
-                            topK.put(wins, deck);
-                        }
+        private void addToTopK(TreeMap<Integer, String> topKWins, String deck, Integer wins) {
+            if (topKWins.containsKey(wins)) {
+                String old_decks = topKWins.get(wins);
+                topKWins.remove(wins);
+                topKWins.put(wins, old_decks + " , " + deck);
+            } else {
+                if (topKWins.size() < K)
+                    topKWins.put(wins, deck);
+                else {
+                    Integer first = topKWins.firstKey();
+                    if (wins.intValue() > first.intValue()) {
+                        topKWins.remove(first);
+                        topKWins.put(wins, deck);
                     }
                 }
-            }
-
-            context.write(new Text("Month: " + months.get(month)), NullWritable.get());
-            for (Integer wins : topK.descendingKeySet()) {
-                context.write(new Text("\tWins: " + wins + " Decks: " + topK.get(wins)), NullWritable.get());
             }
         }
     }
@@ -87,9 +93,9 @@ public class ThirdJob {
         job3.setNumReduceTasks(1);
         job3.setJarByClass(ThirdJob.class);
         job3.setMapperClass(TopKMapper.class);
-        job3.setMapOutputKeyClass(IntWritable.class);
-        job3.setMapOutputValueClass(Text.class);
-        job3.setReducerClass(TopKReduecr.class);
+        job3.setMapOutputKeyClass(Text.class);
+        job3.setMapOutputValueClass(TopK.class);
+        job3.setReducerClass(TopKReducer.class);
         job3.setOutputKeyClass(Text.class);
         job3.setOutputValueClass(NullWritable.class);
         job3.setOutputFormatClass(TextOutputFormat.class);
