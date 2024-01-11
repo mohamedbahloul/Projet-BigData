@@ -14,7 +14,8 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
-import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
+// import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
 public class ThirdJob {
     public static class TopKMapper
@@ -34,8 +35,8 @@ public class ThirdJob {
         }
     }
 
-    public static class TopKReducer extends Reducer<Text, TopK, Text, NullWritable> {
-        private static final int K = 5;
+    public static class TopKReducer extends Reducer<Text, TopK, Text, List<TopK>> {
+        private static final int K = 50;
         private HashMap<String, TreeMap<Integer, List<TopK>>> topKsWins = new HashMap<String, TreeMap<Integer, List<TopK>>>();
         // private HashMap<String, TreeMap<Integer, String>> topKsUses = new
         // HashMap<String, TreeMap<Integer, String>>();
@@ -58,9 +59,9 @@ public class ThirdJob {
                 // addToTopK(topKUses, value.getCards(), value.getUses());
             }
 
-            context.write(new Text(date), NullWritable.get());
+            // context.write(new Text(date), NullWritable.get());
             for (Integer wins : topKWins.descendingKeySet()) {
-                context.write(new Text("\tWins: " + wins + " Decks: " + topKWins.get(wins)), NullWritable.get());
+                context.write(new Text(date), topKWins.get(wins));
             }
             // context.write(new Text(""), NullWritable.get());
             // for (Integer uses : topKUses.descendingKeySet()) {
@@ -68,8 +69,8 @@ public class ThirdJob {
             // NullWritable.get());
             // }
             // context.write(new Text(""), NullWritable.get());
-            context.write(new Text(""), NullWritable.get());
-            context.write(new Text(""), NullWritable.get());
+            // context.write(new Text(""), NullWritable.get());
+            // context.write(new Text(""), NullWritable.get());
         }
 
         private void addToTopK(TreeMap<Integer, List<TopK>> topK, TopK deck) {
@@ -106,8 +107,8 @@ public class ThirdJob {
         job3.setMapOutputValueClass(TopK.class);
         job3.setReducerClass(TopKReducer.class);
         job3.setOutputKeyClass(Text.class);
-        job3.setOutputValueClass(NullWritable.class);
-        job3.setOutputFormatClass(TextOutputFormat.class);
+        job3.setOutputValueClass(List.class);
+        job3.setOutputFormatClass(SequenceFileOutputFormat.class);
         job3.setInputFormatClass(SequenceFileInputFormat.class);
         FileInputFormat.addInputPath(job3, new Path(args[0]));
         FileOutputFormat.setOutputPath(job3, new Path(args[1]));
