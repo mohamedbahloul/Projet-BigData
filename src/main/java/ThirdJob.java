@@ -1,5 +1,7 @@
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.TreeMap;
 
 import org.apache.hadoop.conf.Configuration;
@@ -34,53 +36,60 @@ public class ThirdJob {
 
     public static class TopKReducer extends Reducer<Text, TopK, Text, NullWritable> {
         private static final int K = 5;
-        private HashMap<String, TreeMap<Integer, String>> topKsWins = new HashMap<String, TreeMap<Integer, String>>();
-        private HashMap<String, TreeMap<Integer, String>> topKsUses = new HashMap<String, TreeMap<Integer, String>>();
+        private HashMap<String, TreeMap<Integer, List<TopK>>> topKsWins = new HashMap<String, TreeMap<Integer, List<TopK>>>();
+        // private HashMap<String, TreeMap<Integer, String>> topKsUses = new
+        // HashMap<String, TreeMap<Integer, String>>();
 
         @Override
         public void reduce(Text key, Iterable<TopK> values, Context context)
                 throws IOException, InterruptedException {
             String date = key.toString();
-            TreeMap<Integer, String> topKWins = topKsWins.get(date);
-            TreeMap<Integer, String> topKUses = topKsUses.get(date);
+            TreeMap<Integer, List<TopK>> topKWins = topKsWins.get(date);
+            // TreeMap<Integer, String> topKUses = topKsUses.get(date);
             if (topKWins == null) {
-                topKWins = new TreeMap<Integer, String>();
+                topKWins = new TreeMap<Integer, List<TopK>>();
                 topKsWins.put(date, topKWins);
-                topKUses = new TreeMap<Integer, String>();
-                topKsUses.put(date, topKUses);
+                // topKUses = new TreeMap<Integer, String>();
+                // topKsUses.put(date, topKUses);
             }
 
             for (TopK value : values) {
-                addToTopK(topKWins, value.getCards(), value.getWins());
-                addToTopK(topKUses, value.getCards(), value.getUses());
+                addToTopK(topKWins, value);
+                // addToTopK(topKUses, value.getCards(), value.getUses());
             }
 
             context.write(new Text(date), NullWritable.get());
             for (Integer wins : topKWins.descendingKeySet()) {
                 context.write(new Text("\tWins: " + wins + " Decks: " + topKWins.get(wins)), NullWritable.get());
             }
-            context.write(new Text(""), NullWritable.get());
-            for (Integer uses : topKUses.descendingKeySet()) {
-                context.write(new Text("\tUses: " + uses + " Decks: " + topKUses.get(uses)), NullWritable.get());
-            }
-            context.write(new Text(""), NullWritable.get());
+            // context.write(new Text(""), NullWritable.get());
+            // for (Integer uses : topKUses.descendingKeySet()) {
+            // context.write(new Text("\tUses: " + uses + " Decks: " + topKUses.get(uses)),
+            // NullWritable.get());
+            // }
+            // context.write(new Text(""), NullWritable.get());
             context.write(new Text(""), NullWritable.get());
             context.write(new Text(""), NullWritable.get());
         }
 
-        private void addToTopK(TreeMap<Integer, String> topKWins, String deck, Integer wins) {
-            if (topKWins.containsKey(wins)) {
-                String old_decks = topKWins.get(wins);
-                topKWins.remove(wins);
-                topKWins.put(wins, old_decks + " , " + deck);
+        private void addToTopK(TreeMap<Integer, List<TopK>> topK, TopK deck) {
+            Integer wins = deck.getWins();
+
+            if (topK.containsKey(wins)) {
+                List<TopK> old_decks = topK.get(wins);
+                old_decks.add(deck);
+                // topK.remove(wins);
+                topK.put(wins, old_decks);
             } else {
-                if (topKWins.size() < K)
-                    topKWins.put(wins, deck);
-                else {
-                    Integer first = topKWins.firstKey();
+                List<TopK> decks = new ArrayList<TopK>();
+                decks.add(deck);
+                if (topK.size() < K) {
+                    topK.put(wins, decks);
+                } else {
+                    Integer first = topK.firstKey();
                     if (wins.intValue() > first.intValue()) {
-                        topKWins.remove(first);
-                        topKWins.put(wins, deck);
+                        topK.remove(first);
+                        topK.put(wins, decks);
                     }
                 }
             }
