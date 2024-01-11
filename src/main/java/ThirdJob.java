@@ -74,15 +74,15 @@ public class ThirdJob {
 
         private void addToTopK(TreeMap<Integer, List<TopK>> topK, TopK deck) {
             Integer wins = deck.getWins();
-
+        
             if (topK.containsKey(wins)) {
                 List<TopK> old_decks = topK.get(wins);
-                old_decks.add(deck);
-                // topK.remove(wins);
-                topK.put(wins, old_decks);
+                List<TopK> new_decks = new ArrayList<>(old_decks);
+                new_decks.add(new TopK(deck));
+                topK.put(wins, new_decks);
             } else {
-                List<TopK> decks = new ArrayList<TopK>();
-                decks.add(deck);
+                List<TopK> decks = new ArrayList<>();
+                decks.add(new TopK(deck));
                 if (topK.size() < K) {
                     topK.put(wins, decks);
                 } else {
@@ -93,7 +93,7 @@ public class ThirdJob {
                     }
                 }
             }
-        }
+        }            
     }
 
     public static void main(String[] args) throws Exception {

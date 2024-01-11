@@ -28,6 +28,17 @@ public class TopK implements WritableComparable<TopK> {
     public TopK() {
     }
 
+    public TopK(TopK topK) {
+        this.cards = topK.cards;
+        this.month = topK.month;
+        this.week = topK.week;
+        this.year = topK.year;
+        this.wins = topK.wins;
+        this.uses = topK.uses;
+        this.maxClanTrophies = topK.maxClanTrophies;
+        this.avgDeckDiff = topK.avgDeckDiff;
+    }
+
     @Override
     public void write(DataOutput dataOutput) throws IOException {
         dataOutput.writeUTF(cards);
