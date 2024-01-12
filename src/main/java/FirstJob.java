@@ -75,7 +75,8 @@ public class FirstJob {
                     List<Byte> cardsList = hexStringToList(cards);
                     List<Byte> cardsList2 = hexStringToList(cards2);
 
-                    Game game = new Game(Instant.parse(date), round, win, player, deck, clanTr, cardsList, player2, deck2, clanTr2,
+                    Game game = new Game(Instant.parse(date), round, win, player, deck, clanTr, cardsList, player2,
+                            deck2, clanTr2,
                             cardsList2);
 
                     context.write(game, NullWritable.get());

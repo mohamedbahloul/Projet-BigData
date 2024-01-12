@@ -11,4 +11,10 @@ hdfs dfs -ls /user/mbahloul001/Projet
 hdfs dfs -cat /user/mbahloul001/Projet/part-r-00000
 
 
+TODO : 
+
+    - Find the best way to sort in the topK(for now we are using only the wins)
+    - Find a solution to change the output format from TextOutputFormat to sequenceFileOutputFormat
+
+
 

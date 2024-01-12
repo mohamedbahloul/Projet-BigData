@@ -14,15 +14,15 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
-// import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
 public class ThirdJob {
-    public static class TopKMapper
-            extends Mapper<TopK, NullWritable, Text, TopK> {
+    public static class TopKMapper extends Mapper<TopK, NullWritable, Text, TopK> {
 
         @Override
-        public void map(TopK key, NullWritable value, Context context) throws IOException, InterruptedException {
+        public void map(TopK key, NullWritable value, Context context)
+                throws IOException, InterruptedException {
             if (key.getYear() != -1) {
                 if (key.getMonth() != -1) {
                     context.write(new Text(key.getYear() + "_m_" + key.getMonth()), key);
@@ -35,66 +35,52 @@ public class ThirdJob {
         }
     }
 
-    public static class TopKReducer extends Reducer<Text, TopK, Text, List<TopK>> {
+    public static class TopKReducer extends Reducer<Text, TopK, Text, TopKList> {
         private static final int K = 50;
-        private HashMap<String, TreeMap<Integer, List<TopK>>> topKsWins = new HashMap<String, TreeMap<Integer, List<TopK>>>();
-        // private HashMap<String, TreeMap<Integer, String>> topKsUses = new
-        // HashMap<String, TreeMap<Integer, String>>();
+        private HashMap<String, TreeMap<Integer, TopKList>> topKsWins = new HashMap<>();
 
         @Override
         public void reduce(Text key, Iterable<TopK> values, Context context)
                 throws IOException, InterruptedException {
             String date = key.toString();
-            TreeMap<Integer, List<TopK>> topKWins = topKsWins.get(date);
-            // TreeMap<Integer, String> topKUses = topKsUses.get(date);
+            TreeMap<Integer, TopKList> topKWins = topKsWins.get(date);
+
             if (topKWins == null) {
-                topKWins = new TreeMap<Integer, List<TopK>>();
+                topKWins = new TreeMap<>();
                 topKsWins.put(date, topKWins);
-                // topKUses = new TreeMap<Integer, String>();
-                // topKsUses.put(date, topKUses);
             }
 
             for (TopK value : values) {
                 addToTopK(topKWins, value);
-                // addToTopK(topKUses, value.getCards(), value.getUses());
             }
 
-            // context.write(new Text(date), NullWritable.get());
             for (Integer wins : topKWins.descendingKeySet()) {
                 context.write(new Text(date), topKWins.get(wins));
             }
-            // context.write(new Text(""), NullWritable.get());
-            // for (Integer uses : topKUses.descendingKeySet()) {
-            // context.write(new Text("\tUses: " + uses + " Decks: " + topKUses.get(uses)),
-            // NullWritable.get());
-            // }
-            // context.write(new Text(""), NullWritable.get());
-            // context.write(new Text(""), NullWritable.get());
-            // context.write(new Text(""), NullWritable.get());
         }
 
-        private void addToTopK(TreeMap<Integer, List<TopK>> topK, TopK deck) {
+        private void addToTopK(TreeMap<Integer, TopKList> topK, TopK deck) {
             Integer wins = deck.getWins();
-        
+
             if (topK.containsKey(wins)) {
-                List<TopK> old_decks = topK.get(wins);
-                List<TopK> new_decks = new ArrayList<>(old_decks);
-                new_decks.add(new TopK(deck));
-                topK.put(wins, new_decks);
+                TopKList oldList = topK.get(wins);
+                TopKList newList = new TopKList(oldList);
+                newList.addTopK(deck);
+                topK.put(wins, newList);
             } else {
-                List<TopK> decks = new ArrayList<>();
-                decks.add(new TopK(deck));
+                TopKList newList = new TopKList();
+                newList.addTopK(deck);
                 if (topK.size() < K) {
-                    topK.put(wins, decks);
+                    topK.put(wins, newList);
                 } else {
                     Integer first = topK.firstKey();
                     if (wins.intValue() > first.intValue()) {
                         topK.remove(first);
-                        topK.put(wins, decks);
+                        topK.put(wins, newList);
                     }
                 }
             }
-        }            
+        }
     }
 
     public static void main(String[] args) throws Exception {
@@ -107,7 +93,7 @@ public class ThirdJob {
         job3.setMapOutputValueClass(TopK.class);
         job3.setReducerClass(TopKReducer.class);
         job3.setOutputKeyClass(Text.class);
-        job3.setOutputValueClass(List.class);
+        job3.setOutputValueClass(TopKList.class);
         job3.setOutputFormatClass(SequenceFileOutputFormat.class);
         job3.setInputFormatClass(SequenceFileInputFormat.class);
         FileInputFormat.addInputPath(job3, new Path(args[0]));
