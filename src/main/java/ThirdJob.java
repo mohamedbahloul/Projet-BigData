@@ -35,49 +35,53 @@ public class ThirdJob {
         }
     }
 
-    public static class TopKReducer extends Reducer<Text, TopK, Text, TopKList> {
-        private static final int K = 10;
-        private HashMap<String, TreeMap<Integer, TopKList>> topKsWins = new HashMap<>();
+    public static class TopKReducer extends Reducer<Text, TopK, Text, TopK> {
+        private static final int K = 50;
+        private HashMap<String, TreeMap<TopKKey, TopK>> topKsWins = new HashMap<String, TreeMap<TopKKey, TopK>>();
 
         @Override
         public void reduce(Text key, Iterable<TopK> values, Context context)
                 throws IOException, InterruptedException {
             String date = key.toString();
-            TreeMap<Integer, TopKList> topKWins = topKsWins.get(date);
-
+            TreeMap<TopKKey, TopK> topKWins = topKsWins.get(date);
             if (topKWins == null) {
-                topKWins = new TreeMap<>();
+                topKWins = new TreeMap<TopKKey, TopK>();
                 topKsWins.put(date, topKWins);
             }
 
             for (TopK value : values) {
-                addToTopK(topKWins, value);
+                addToTopKByScore(topKWins, value);
             }
 
-            for (Integer wins : topKWins.descendingKeySet()) {
+            for (TopKKey wins : topKWins.descendingKeySet()) {
                 context.write(new Text(date), topKWins.get(wins));
             }
         }
 
-        private void addToTopK(TreeMap<Integer, TopKList> topK, TopK deck) {
-            Integer wins = deck.getWins();
+        // private void addToTopKByFIFO(TreeMap<Integer, TopK> topK, TopK deck) {
+        //     Integer wins = deck.getWins();
 
-            if (topK.containsKey(wins)) {
-                TopKList oldList = topK.get(wins);
-                TopKList newList = new TopKList(oldList);
-                newList.addTopK(deck);
-                topK.put(wins, newList);
+        //     if (topK.size() < K) {
+        //         topK.put(wins, deck);
+        //     } else {
+        //         Integer first = topK.firstKey();
+        //         if (wins.intValue() > first.intValue()) {
+        //             topK.remove(first);
+        //             topK.put(wins, deck);
+        //         }
+        //     }
+        // }
+
+        private void addToTopKByScore(TreeMap<TopKKey, TopK> topK, TopK deck) {
+            TopKKey key = new TopKKey(deck.getWins(), deck.getUses(), deck.getAvgDeckDiff());
+
+            if (topK.size() < K) {
+                topK.put(key, new TopK(deck));
             } else {
-                TopKList newList = new TopKList();
-                newList.addTopK(deck);
-                if (topK.size() < K) {
-                    topK.put(wins, newList);
-                } else {
-                    Integer first = topK.firstKey();
-                    if (wins.intValue() > first.intValue()) {
-                        topK.remove(first);
-                        topK.put(wins, newList);
-                    }
+                TopKKey first = topK.firstKey();
+                if (key.compareTo(first) > 0) {
+                    topK.remove(first);
+                    topK.put(key, new TopK(deck));
                 }
             }
         }
@@ -93,7 +97,7 @@ public class ThirdJob {
         job3.setMapOutputValueClass(TopK.class);
         job3.setReducerClass(TopKReducer.class);
         job3.setOutputKeyClass(Text.class);
-        job3.setOutputValueClass(TopKList.class);
+        job3.setOutputValueClass(TopK.class);
         job3.setOutputFormatClass(SequenceFileOutputFormat.class);
         job3.setInputFormatClass(SequenceFileInputFormat.class);
         FileInputFormat.addInputPath(job3, new Path(args[0]));
