@@ -13,8 +13,10 @@ public class TopK implements WritableComparable<TopK> {
     private Integer uses;
     private Integer maxClanTrophies;
     private Double avgDeckDiff;
+    private Integer distinctPlayersNumber;
 
-    public TopK(String cards, Byte month, Byte week, Short year, Integer wins, Integer uses, Integer maxClanTrophies, Double avgDeckDiff) {
+    public TopK(String cards, Byte month, Byte week, Short year, Integer wins, Integer uses, Integer maxClanTrophies,
+            Double avgDeckDiff, Integer distinctPlayersNumber) {
         this.cards = cards;
         this.month = month;
         this.week = week;
@@ -23,6 +25,7 @@ public class TopK implements WritableComparable<TopK> {
         this.uses = uses;
         this.maxClanTrophies = maxClanTrophies;
         this.avgDeckDiff = avgDeckDiff;
+        this.distinctPlayersNumber = distinctPlayersNumber;
     }
 
     public TopK() {
@@ -37,6 +40,7 @@ public class TopK implements WritableComparable<TopK> {
         this.uses = topK.uses;
         this.maxClanTrophies = topK.maxClanTrophies;
         this.avgDeckDiff = topK.avgDeckDiff;
+        this.distinctPlayersNumber = topK.distinctPlayersNumber;
     }
 
     @Override
@@ -49,6 +53,7 @@ public class TopK implements WritableComparable<TopK> {
         dataOutput.writeInt(uses);
         dataOutput.writeInt(maxClanTrophies);
         dataOutput.writeDouble(avgDeckDiff);
+        dataOutput.writeInt(distinctPlayersNumber);
     }
 
     @Override
@@ -61,6 +66,7 @@ public class TopK implements WritableComparable<TopK> {
         uses = dataInput.readInt();
         maxClanTrophies = dataInput.readInt();
         avgDeckDiff = dataInput.readDouble();
+        distinctPlayersNumber = dataInput.readInt();
     }
 
     @Override
@@ -82,7 +88,8 @@ public class TopK implements WritableComparable<TopK> {
 
     @Override
     public String toString() {
-        return cards + "_" + month + "_" + week + "_" + year + "_" + wins + "_" + uses + "_" + maxClanTrophies + "_" + avgDeckDiff;
+        return cards + "_" + month + "_" + week + "_" + year + "_" + wins + "_" + uses + "_" + maxClanTrophies + "_"
+                + avgDeckDiff + "_" + distinctPlayersNumber;
     }
 
     public String getCards() {
@@ -147,6 +154,14 @@ public class TopK implements WritableComparable<TopK> {
 
     public void setAvgDeckDiff(Double avgDeckDiff) {
         this.avgDeckDiff = avgDeckDiff;
+    }
+
+    public Integer getDistinctPlayersNumber() {
+        return distinctPlayersNumber;
+    }
+
+    public void setDistinctPlayersNumber(Integer distinctPlayersNumber) {
+        this.distinctPlayersNumber = distinctPlayersNumber;
     }
 
 }

@@ -176,8 +176,9 @@ public class SecondJob {
             if (stringKey.contains("y_")) {
                 year = Short.parseShort(split[4]);
             }
-            
-            TopK topK = new TopK(stringKey.split("_")[0], month, week, year, wins, uses, maxClanTr, avgDeckDiff);
+
+            TopK topK = new TopK(stringKey.split("_")[0], month, week, year, wins, uses, maxClanTr, avgDeckDiff,
+                    players.size());
             context.write(topK, NullWritable.get());
         }
     }

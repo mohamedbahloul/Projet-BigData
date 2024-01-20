@@ -36,7 +36,7 @@ public class ThirdJob {
     }
 
     public static class TopKReducer extends Reducer<Text, TopK, Text, TopKList> {
-        private static final int K = 50;
+        private static final int K = 10;
         private HashMap<String, TreeMap<Integer, TopKList>> topKsWins = new HashMap<>();
 
         @Override
