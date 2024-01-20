@@ -36,44 +36,39 @@ public class ThirdJob {
     }
 
     public static class TopKReducer extends Reducer<Text, TopK, Text, TopK> {
-        private static final int K = 50;
-        private HashMap<String, TreeMap<TopKKey, TopK>> topKsWins = new HashMap<String, TreeMap<TopKKey, TopK>>();
+        private int K;
+        private String FILTER;
+        private HashMap<String, TreeMap<TopKKey, TopK>> topKsByFilter;
+
+        @Override
+        protected void setup(Context context) throws IOException, InterruptedException {
+            Configuration conf = context.getConfiguration();
+            K = conf.getInt("K_VALUE", 100);
+            FILTER = conf.get("FILTER", "W");
+            topKsByFilter = new HashMap<String, TreeMap<TopKKey, TopK>>();
+        }
 
         @Override
         public void reduce(Text key, Iterable<TopK> values, Context context)
                 throws IOException, InterruptedException {
             String date = key.toString();
-            TreeMap<TopKKey, TopK> topKWins = topKsWins.get(date);
-            if (topKWins == null) {
-                topKWins = new TreeMap<TopKKey, TopK>();
-                topKsWins.put(date, topKWins);
+            TreeMap<TopKKey, TopK> topKs = topKsByFilter.get(date);
+            if (topKs == null) {
+                topKs = new TreeMap<TopKKey, TopK>();
+                topKsByFilter.put(date, topKs);
             }
 
             for (TopK value : values) {
-                addToTopKByScore(topKWins, value);
+                addToTopK(topKs, value);
             }
 
-            for (TopKKey wins : topKWins.descendingKeySet()) {
-                context.write(new Text(date), topKWins.get(wins));
+            for (TopKKey wins : topKs.descendingKeySet()) {
+                context.write(new Text(date), topKs.get(wins));
             }
         }
 
-        // private void addToTopKByFIFO(TreeMap<Integer, TopK> topK, TopK deck) {
-        //     Integer wins = deck.getWins();
-
-        //     if (topK.size() < K) {
-        //         topK.put(wins, deck);
-        //     } else {
-        //         Integer first = topK.firstKey();
-        //         if (wins.intValue() > first.intValue()) {
-        //             topK.remove(first);
-        //             topK.put(wins, deck);
-        //         }
-        //     }
-        // }
-
-        private void addToTopKByScore(TreeMap<TopKKey, TopK> topK, TopK deck) {
-            TopKKey key = new TopKKey(deck.getWins(), deck.getUses(), deck.getAvgDeckDiff());
+        private void addToTopK(TreeMap<TopKKey, TopK> topK, TopK deck) {
+            TopKKey key = new TopKKey(deck.getWins(), deck.getUses(), deck.getDistinctPlayersNumber(), deck.getAvgDeckDiff(), FILTER);
 
             if (topK.size() < K) {
                 topK.put(key, new TopK(deck));
@@ -89,6 +84,13 @@ public class ThirdJob {
 
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
+        if (args.length == 3 || args.length == 4) {
+            conf.set("K_VALUE", args[2]);
+            if (args.length == 4) {
+                conf.set("FILTER", args[3]);
+            }
+        }
+
         Job job3 = Job.getInstance(conf, "ThirdJob");
         job3.setNumReduceTasks(1);
         job3.setJarByClass(ThirdJob.class);
