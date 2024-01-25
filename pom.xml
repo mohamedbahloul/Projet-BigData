@@ -46,7 +46,7 @@
         </plugin> -->
 
         <!-- Plugin pour générer le JAR du deuxième job (SecondJob) -->
-        <!-- <plugin>
+        <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-jar-plugin</artifactId>
             <version>3.0.2</version>
@@ -57,10 +57,10 @@
                     </manifest>
                 </archive>
             </configuration>
-        </plugin> -->
+        </plugin>
 
         <!-- Plugin pour générer le JAR du troisième job (ThirdJob) -->
-        <plugin>
+        <!-- <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-jar-plugin</artifactId>
             <version>3.0.2</version>
@@ -71,7 +71,7 @@
                     </manifest>
                 </archive>
             </configuration>
-        </plugin>
+        </plugin> -->
     </plugins>
 </build>
 
