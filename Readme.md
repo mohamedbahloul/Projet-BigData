@@ -33,25 +33,21 @@ L'application utilise Hadoop pour stocker et traiter les données, et plusieurs 
    git clone https://github.com/ton-utilisateur/projet-clashroyale.git
    cd projet-clashroyale
 2. Compiler et packager le projet avec Maven :
+   ```bash
     mvn clean
     mvn compile
     mvn package
 
-3. Exécution du projet :
+4. Exécution du projet :
+   ```bash
    hadoop jar projet-clashroyale.jar
 
-4. Structure du projet :
-    ├── src/
-    │   ├── main/
-    │   │   ├── java/
-    │   │   │   ├── Game.java          # Classe représentant un match entre deux joueurs
-    │   │   │   ├── GameSummary.java   # Classe résumant les statistiques d'un joueur
-    │   │   │   ├── TopK.java          # Classe pour le classement des meilleures cartes
-    │   │   │   ├── TopKKey.java       # Classe définissant la clé de tri des cartes
-    │   │   └── resources/
-    │   └── test/                      # Tests unitaires 
-    ├── pom.xml                        # Fichier de configuration Maven
-    └── README.md                      # Ce fichier
+6. Structure du projet :
+
+   Game.java          # Classe représentant un match entre deux joueurs
+   GameSummary.java   # Classe résumant les statistiques d'un joueur
+   TopK.java          # Classe pour le classement des meilleures cartes
+   TopKKey.java       # Classe définissant la clé de tri des cartes
 
 
 
