@@ -44,10 +44,10 @@ L'application utilise Hadoop pour stocker et traiter les données, et plusieurs 
 
 6. Structure du projet :
 
-   Game.java          # Classe représentant un match entre deux joueurs
-   GameSummary.java   # Classe résumant les statistiques d'un joueur
-   TopK.java          # Classe pour le classement des meilleures cartes
-   TopKKey.java       # Classe définissant la clé de tri des cartes
+   - Game.java          # Classe représentant un match entre deux joueurs
+   - GameSummary.java   # Classe résumant les statistiques d'un joueur
+   - TopK.java          # Classe pour le classement des meilleures cartes
+   - TopKKey.java       # Classe définissant la clé de tri des cartes
 
 
 
